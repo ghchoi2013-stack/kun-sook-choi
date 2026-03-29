@@ -365,15 +365,32 @@ function ContactForm() {
     content: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    // Simulate API call
-    setTimeout(() => {
-      setStatus('success');
-      setFormData({ name: '', email: '', phone: '', content: '' });
-      setTimeout(() => setStatus('idle'), 5000);
-    }, 1500);
+    
+    try {
+      const response = await fetch('https://formspree.io/f/mykbekkb', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', phone: '', content: '' });
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        setStatus('idle');
+        alert('의뢰 제출 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      }
+    } catch (error) {
+      setStatus('idle');
+      alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
+    }
   };
 
   if (status === 'success') {
@@ -399,6 +416,7 @@ function ContactForm() {
           <label className="text-[10px] font-mono uppercase tracking-widest text-white/40 ml-2">이름</label>
           <input 
             required
+            name="name"
             type="text" 
             placeholder="성함을 입력하세요"
             value={formData.name}
@@ -410,6 +428,7 @@ function ContactForm() {
           <label className="text-[10px] font-mono uppercase tracking-widest text-white/40 ml-2">이메일</label>
           <input 
             required
+            name="email"
             type="email" 
             placeholder="email@example.com"
             value={formData.email}
@@ -423,6 +442,7 @@ function ContactForm() {
         <label className="text-[10px] font-mono uppercase tracking-widest text-white/40 ml-2">핸드폰 번호</label>
         <input 
           required
+          name="phone"
           type="tel" 
           placeholder="010-0000-0000"
           value={formData.phone}
@@ -435,6 +455,7 @@ function ContactForm() {
         <label className="text-[10px] font-mono uppercase tracking-widest text-white/40 ml-2">상상 내용</label>
         <textarea 
           required
+          name="content"
           rows={5}
           placeholder="당신이 꿈꾸는 상상을 자유롭게 들려주세요..."
           value={formData.content}
